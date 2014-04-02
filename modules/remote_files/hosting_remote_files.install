@@ -26,7 +26,7 @@ function hosting_remote_files_schema() {
       'status' => array(
         'type' => 'int',
         'not null' => TRUE,
-				'default' => 0,
+        'default' => 0,
       ),
       'username' => array(
         'type' => 'varchar',

@@ -5,7 +5,7 @@
  */
 class Provision_Service_remote_files extends Provision_Service {
   public $service = 'remote_files';
-	
+
   /**
    * Add the needed properties to the site context.
    */

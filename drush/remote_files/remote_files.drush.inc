@@ -55,6 +55,7 @@ function _remote_files_create_dir($uri, $data) {
  */
 function remote_files_provision_apache_vhost_config($uri, $data) {
 	$site_path = d()->site_path;
+	$local_dir = $site_path . '/remote-files';
 	// Always umount the directory before attempting permissions and such.
 	drush_shell_cd_and_exec($site_path, 'fusermount -u ' . $local_dir);
 	$path = _remote_files_create_dir($uri, $data);
@@ -63,7 +64,6 @@ function remote_files_provision_apache_vhost_config($uri, $data) {
 	$username = d()->remote_files_username;
 	$host = d()->remote_files_host;
 	$remote_dir = rtrim(d()->remote_files_remote_dir, '/');
-	$local_dir = $site_path . '/remote-files';
 	$command = 'sshfs ' . $username . '@' . $host . ':' . $remote_dir . ' ' . $local_dir . ' -o allow_other';
 
   if ($status === '1') {

@@ -55,6 +55,8 @@ function _remote_files_create_dir($uri, $data) {
  */
 function remote_files_provision_apache_vhost_config($uri, $data) {
 	$site_path = d()->site_path;
+	// Always umount the directory before attempting permissions and such.
+	drush_shell_cd_and_exec($site_path, 'fusermount -u ' . $local_dir);
 	$path = _remote_files_create_dir($uri, $data);
 	$lines = array();
 	$status = d()->remote_files_status;
@@ -72,7 +74,6 @@ function remote_files_provision_apache_vhost_config($uri, $data) {
 		$lines[] = '</IfModule>';
 		$lines[] = '';
 
-		drush_shell_cd_and_exec($site_path, 'fusermount -u ' . $local_dir);
 	  drush_shell_cd_and_exec($site_path, $command);
 	}
 

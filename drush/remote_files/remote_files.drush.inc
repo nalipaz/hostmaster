@@ -71,9 +71,10 @@ function remote_files_provision_apache_vhost_config($uri, $data) {
 		$lines[] = '  RewriteRule ^/sites/' . $uri . '/files/((?!css/|ctools/|imagecache/|js/|tmp/).*)$ /sites/$uri/remote-files/$1 [L]';
 		$lines[] = '</IfModule>';
 		$lines[] = '';
-	}
 
-	drush_shell_cd_and_exec($site_path, $command);
+		drush_shell_cd_and_exec($site_path, 'fusermount -u ' . $local_dir);
+	  drush_shell_cd_and_exec($site_path, $command);
+	}
 
   return implode("\n", $lines);
 }

@@ -1,0 +1,150 @@
+<?php
+/**
+ * @file
+ * Allows setting a site to use a remote set of files for the files directory.
+ * 
+ * @author Nicholas Alipaz - http://nicholas.alipaz.net/ (email through contact form)
+ */
+
+/**
+ * Implementation of hook_form_alter()
+ */
+function hosting_remote_files_form_alter(&$form, $form_state, $form_id) {
+  if ($form_id == 'site_node_form') {
+    $form['remote_files'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Remote Files'),
+      '#description' => t('Allows setting a site to use a remote set of files for the files directory..'),
+    );
+    $form['remote_files']['remote_files_status'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Remote Files'),
+      '#default_value' => $form['#node']->remote_files_status ? $form['#node']->remote_files_status : '',
+      '#weight' => 0,
+    );
+    $form['remote_files']['remote_files_username'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Username'),
+      '#default_value' => $form['#node']->remote_files_username ? $form['#node']->remote_files_username : '',
+      '#weight' => 0,
+    );
+    $form['remote_files']['remote_files_host'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Host'),
+      '#default_value' => $form['#node']->remote_files_host ? $form['#node']->remote_files_host : '',
+      '#weight' => 0,
+    );
+    $form['remote_files']['remote_files_remote_dir'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Remote Directory'),
+      '#default_value' => $form['#node']->remote_files_remote_dir ? $form['#node']->remote_files_remote_dir : '',
+      '#weight' => 0,
+    );
+
+    return $form;
+  }
+}
+
+/**
+ * Implementation of hook_insert()
+ */
+function hosting_remote_files_insert($node) {
+  if (!empty($node->remote_files_status)) {
+    db_query("INSERT INTO {hosting_remote_files} (vid, nid, status, username, host, remote_dir) VALUES (%d, %d, %d, '%s', '%s', '%s')", $node->vid, $node->nid, $node->remote_files_status, $node->remote_files_username, $node->remote_files_host, $node->remote_files_remote_dir);
+  }
+}
+
+/**
+ * Implementation of hook_update()
+ */
+function hosting_remote_files_update($node) {
+  if (FALSE === db_fetch_array(db_query("SELECT status AS remote_files_status, username AS remote_files_username, host AS remote_files_host, remote_dir AS remote_files_remote_dir FROM {hosting_remote_files} WHERE vid = %d", $node->vid))) {
+    hosting_remote_files_insert($node);
+  }
+  else {
+    db_query("UPDATE {hosting_remote_files} SET status = %d, username = '%s', host = '%s', remote_dir = '%s' WHERE vid = %d", $node->remote_files_status, $node->remote_files_username, $node->remote_files_host, $node->remote_files_remote_dir, $node->vid);
+  }
+
+}
+
+/**
+ * Implementation of hook_delete()
+ */
+function hosting_remote_files_delete($node) {
+  db_query("DELETE FROM {hosting_remote_files} WHERE nid=%d", $node->nid);
+}
+
+/**
+ * Implementation of hook_delete_revision()
+ */
+function hosting_remote_files_delete_revision($node) {
+  db_query("DELETE FROM {hosting_remote_files} WHERE vid=%d", $node->vid);
+}
+
+/**
+ * Implementation of hook_nodeapi()
+ */
+function hosting_remote_files_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  if ($node->type == 'site') {
+    switch ($op) {
+    case 'insert':
+        hosting_remote_files_insert($node);
+        break;
+      case 'update':
+        hosting_remote_files_update($node);
+        break;
+      case 'delete' :
+        hosting_remote_files_delete($node);
+        break;
+      case 'delete revision':
+        hosting_remote_files_delete_revision($node);
+        break;
+      case 'load':
+        $additions = db_fetch_array(db_query("SELECT status AS remote_files_status, username AS remote_files_username, host AS remote_files_host, remote_dir AS remote_files_remote_dir FROM {hosting_remote_files} WHERE vid = %d", $node->vid));
+        return $additions;
+        break;
+    }
+  }
+}
+
+/**
+* Implementation of hook_feeds_node_processor_targets_alter().
+*/
+//function hosting_remote_files_feeds_node_processor_targets_alter(&$targets, $content_type) {
+//  if ($content_type == 'site') {
+//    $targets['remote_files_username'] = array(
+//      'name' => t('HTTP Basic Auth - username'),
+//      'description' => t('Set this to enable HTTP basic auth on the site.'),
+//      'callback' => 'hosting_remote_files_set_target_remote_files_simple',
+//    );
+//
+//    $targets['remote_files_password'] = array(
+//      'name' => t('HTTP Basic Auth - password'),
+//      'description' => t('The password, this is not transferred securely and should be considered in the public domain.'),
+//      'callback' => 'hosting_remote_files_set_target_remote_files_simple',
+//    );
+//
+//    $targets['remote_files_message'] = array(
+//      'name' => t('HTTP Basic Auth - username'),
+//      'description' => t('A message to show when prompting the user for username and password.'),
+//      'callback' => 'hosting_remote_files_set_target_remote_files_message',
+//    );
+//
+//  }
+//}
+
+/**
+ * Mapping callback for feeds.
+ */
+//function hosting_remote_files_set_target_remote_files_simple($node, $target, $value) {
+//  if (!empty($value)) {
+//    $node->$target = $value;
+//  }
+//}
+
+/**
+ * Mapping callback for feeds.
+ */
+//function hosting_remote_files_set_target_remote_files_message($node, $target, $value) {
+//  $node->$target = !empty($value) ? $value : t('Restricted access');
+//}

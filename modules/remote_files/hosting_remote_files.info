@@ -1,0 +1,6 @@
+name = Remote Files
+description = Allows setting a site to use a remote set of files for the files directory.
+package = Hosting
+dependencies[] = hosting_site
+core = 6.x
+version = VERSION

@@ -1,0 +1,69 @@
+<?php
+/**
+ * @file
+ * Install file to allow creating schema and doing updates.
+ * 
+ * @author Nicholas Alipaz - http://nicholas.alipaz.net/ (email through contact form)
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function hosting_remote_files_schema() {
+  $schema['hosting_remote_files'] = array(
+    'fields' => array(
+      'vid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'status' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+				'default' => 0,
+      ),
+      'username' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'host' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'remote_dir' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+    ),
+    'indexes' => array(
+      'vid' => array('vid'),
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function hosting_remote_files_install() {
+  // Create tables.
+  drupal_install_schema('hosting_remote_files');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function hosting_remote_files_uninstall() {
+  // Remove tables.
+  drupal_uninstall_schema('hosting_remote_files');
+}

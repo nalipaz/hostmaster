@@ -70,7 +70,7 @@ function remote_files_provision_apache_vhost_config($uri, $data) {
 		// Add the needed lines into the vhost.
 		$lines[] = '<IfModule mod_rewrite.c>';
 		$lines[] = '  RewriteEngine on';
-		$lines[] = '  RewriteRule ^/sites/' . $uri . '/files/((?!css/|ctools/|imagecache/|js/|tmp/).*)$ /sites/$uri/remote-files/$1 [L]';
+		$lines[] = '  RewriteRule ^/sites/' . $uri . '/files/((?!css/|ctools/|imagecache/|js/|tmp/).*)$ /sites/' . $uri . '/remote-files/$1 [L]';
 		$lines[] = '</IfModule>';
 		$lines[] = '';
 

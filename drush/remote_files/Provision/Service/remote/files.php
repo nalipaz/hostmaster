@@ -11,9 +11,7 @@ class Provision_Service_remote_files extends Provision_Service {
    */
   static function subscribe_site($context) {
     $context->setProperty('remote_files_status');
-    $context->setProperty('remote_files_username');
-    $context->setProperty('remote_files_host');
-    $context->setProperty('remote_files_remote_dir');
+    $context->setProperty('remote_uri');
   }
 }
 

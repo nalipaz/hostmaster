@@ -28,17 +28,7 @@ function hosting_remote_files_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'username' => array(
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-      ),
-      'host' => array(
-        'type' => 'varchar',
-        'length' => 255,
-        'not null' => TRUE,
-      ),
-      'remote_dir' => array(
+      'uri' => array(
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,

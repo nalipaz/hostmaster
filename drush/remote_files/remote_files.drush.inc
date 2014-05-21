@@ -47,7 +47,7 @@ function remote_files_provision_services() {
 function remote_files_provision_apache_vhost_config($uri, $data) {
   $lines = array();
   $status = d()->remote_files_status;
-  $remote_uri = trim(d()->remote_uri, '/') . '/';
+  $remote_uri = trim(d()->remote_files_uri, '/') . '/';
 
   if ($status === '1') {
     // Add the needed lines into the vhost.

@@ -54,6 +54,7 @@ function remote_files_provision_apache_vhost_config($uri, $data) {
     $lines[] = '<IfModule mod_rewrite.c>';
     $lines[] = '  RewriteEngine on';
     $lines[] = '  RewriteRule ^/sites/' . $uri . '/files/((?!css/|ctools/|imagecache/|js/|tmp/).*)$ ' . $remote_uri . '$1 [R=301,NC,L]';
+    $lines[] = '  RewriteRule ^/sites/default/files/((?!css/|ctools/|imagecache/|js/|tmp/).*)$ ' . $remote_uri . '$1 [R=301,NC,L]';
     $lines[] = '</IfModule>';
     $lines[] = '';
   }

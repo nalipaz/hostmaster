@@ -16,7 +16,7 @@ function hosting_symlink_directories_form_alter(&$form, $form_state, $form_id) {
       '#type' => 'textfield',
       '#title' => t('Symlink Sub-directories'),
       '#description' => t('A comma separated list of subdirectories to create symlinks for.  Example: modules,themes,libraries'),
-      '#default_value' => $form['#node']->symlink_subdirectories ? implode(',', $form['#node']->symlink_subdirectories) : '',
+      '#default_value' => $form['#node']->symlink_subdirectories ? $form['#node']->symlink_subdirectories : '',
       '#weight' => 2,
     );
     return $form;

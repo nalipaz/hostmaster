@@ -1,6 +1,6 @@
 name = Symlink Directories
 description = Allow choosing directories for symlinking in the site's directory.  Examples include symlinking modules folder to somewhere else.
-package = Stitch Technologies
+package = Hosting
 dependencies[] = hosting_site
- 
 core = 6.x
+version = VERSION

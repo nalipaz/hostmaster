@@ -10,6 +10,7 @@ class Provision_Service_symlink_directories extends Provision_Service {
    * Add the needed properties to the site context.
    */
   static function subscribe_site($context) {
-    $context->setProperty('target-command-specific');
+    $context->setProperty('symlink_directory_base');
+    $context->setProperty('symlink_subdirectories');
   }
 }

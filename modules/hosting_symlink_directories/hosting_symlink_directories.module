@@ -90,12 +90,13 @@ function hosting_symlink_directories_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL
       case 'load':
         $additions['symlink_directory_base'] = db_result(db_query("SELECT symlink_directory_base FROM {hosting_symlink_directories} WHERE vid=%d", $node->vid));
         $additions['symlink_subdirectories'] = db_result(db_query("SELECT symlink_subdirectories FROM {hosting_symlink_directories} WHERE vid=%d", $node->vid));
-        $additions['symlink_subdirectories'] = explode(',', str_replace(' ', '', $additions['symlink_subdirectories']));
+
         return $additions;
         break;
       case 'view':
-        $subdirectories = implode(', ', $node->symlink_subdirectories);
         if ($node->symlink_directory_base) {
+          $symlink_subdirectories = explode(',', str_replace(' ', '', $node->symlink_subdirectories));
+          $subdirectories = implode(', ', $symlink_subdirectories);
           $node->content['info']['symlink_directory_settings'] = array(
             '#type' => 'item',
             '#title' => t('Symlink Directory <br />Settings'),

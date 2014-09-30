@@ -1,0 +1,6 @@
+name = Local sync tasks
+description = Local synchronization stuff.
+package = Hosting
+dependencies[] = hosting_site
+core = 6.x
+version = VERSION

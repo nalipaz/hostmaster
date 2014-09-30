@@ -1,0 +1,113 @@
+<?php
+/**
+ * @file
+ * Allows setting a site to use a remote set of files for the files directory.
+ * 
+ * @author Nicholas Alipaz - http://nicholas.alipaz.net/ (email through contact form)
+ */
+
+/**
+ * Implementation of hook_form_alter()
+ */
+function hosting_local_sync_tasks_form_alter(&$form, $form_state, $form_id) {
+  if ($form_id == 'site_node_form') {
+    $form['local_sync_tasks'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Local settings'),
+      '#default_value' => $form['#node']->local_sync_tasks ? $form['#node']->local_sync_tasks : '',
+      '#weight' => 0,
+    );
+
+    return $form;
+  }
+}
+
+/**
+ * Implementation of hook_insert()
+ */
+function hosting_local_sync_tasks_insert($node) {
+  if (!empty($node->local_sync_tasks)) {
+    db_query("INSERT INTO {hosting_local_sync_tasks} (vid, nid, tasks) VALUES (%d, %d, '%s')", $node->vid, $node->nid, $node->local_sync_tasks);
+  }
+}
+
+/**
+ * Implementation of hook_update()
+ */
+function hosting_local_sync_tasks_update($node) {
+  if (FALSE === db_fetch_array(db_query("SELECT tasks AS local_sync_tasks FROM {hosting_local_sync_tasks} WHERE vid = %d", $node->vid))) {
+    hosting_local_sync_tasks_insert($node);
+  }
+  else {
+    db_query("UPDATE {hosting_local_sync_tasks} SET tasks = '%s' WHERE vid = %d", $node->local_sync_tasks, $node->vid);
+  }
+}
+
+/**
+ * Implementation of hook_delete()
+ */
+function hosting_local_sync_tasks_delete($node) {
+  db_query("DELETE FROM {hosting_local_sync_tasks} WHERE nid=%d", $node->nid);
+}
+
+/**
+ * Implementation of hook_delete_revision()
+ */
+function hosting_local_sync_tasks_delete_revision($node) {
+  db_query("DELETE FROM {hosting_local_sync_tasks} WHERE vid=%d", $node->vid);
+}
+
+/**
+ * Implementation of hook_nodeapi()
+ */
+function hosting_local_sync_tasks_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  if ($node->type == 'site') {
+    switch ($op) {
+      case 'insert':
+        hosting_local_sync_tasks_insert($node);
+        break;
+      case 'update':
+        hosting_local_sync_tasks_update($node);
+        break;
+      case 'delete' :
+        hosting_local_sync_tasks_delete($node);
+        break;
+      case 'delete revision':
+        hosting_local_sync_tasks_delete_revision($node);
+        break;
+      case 'load':
+        $data = db_fetch_array(db_query("SELECT tasks AS local_sync_tasks FROM {hosting_local_sync_tasks} WHERE vid = %d", $node->vid));
+        $tasks_array = eval('return ' . $data['local_sync_tasks'] . '');
+        $additions = array(
+          'local_sync_tasks_array' => $tasks_array,
+          'local_sync_tasks' => $data['local_sync_tasks'],
+        );
+
+        return $additions;
+        break;
+    }
+  }
+}
+
+//array(
+//  'sql-sync' => array(
+//    'modules' => array(
+//      'enable' => array('stage_file_proxy', 'syslog'),
+//      'disable' => array('cdn', 'help', 'update', 'simpletest', 'dblog', 'memcache', 'memcache_admin'),
+//    ),
+//    'variables' => array(
+//      'set' => array(
+//        'stage_file_proxy_origin' => 'http://globalcyberscholar.creativechannels.netdna-cdn.com',
+//        'stage_file_proxy_origin_dir' => 'sites/default/files',
+//        'syslog_identity' => 'cyberscholar_com',
+//        'syslog_facility' => '128',
+//        'site_mail' => 'nalipaz@creativechannel.com',
+//        'admin_menu_cache_client' => '0',
+//        'cache' => '0',
+//        'preprocess_css' => '0',
+//        'preprocess_js' => '0',
+//      ),
+//    ),
+//    'registry-rebuild' => TRUE,
+//  ),
+//);

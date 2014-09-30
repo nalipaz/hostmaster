@@ -1,0 +1,108 @@
+<?php
+/**
+ * Implementation of hook_form_alter()
+ */
+function hosting_symlink_directories_form_alter(&$form, $form_state, $form_id) {
+  if ($form_id == 'site_node_form' || $form_id == 'platform_node_form') {
+    $symlinks = ($form_id == 'platform_node_form') ? 'sites/all directory symlinks' : 'symlinks';
+    $form['symlink_directory_base'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Symlink Directory Base Path'),
+      '#description' => t('The absolute base path to the parent directory which you would like to have your %symlinks point to', array('%symlinks' => $symlinks)),
+      '#default_value' => $form['#node']->symlink_directory_base ? $form['#node']->symlink_directory_base : '',
+      '#weight' => 1,
+    );
+    $form['symlink_subdirectories'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Symlink Sub-directories'),
+      '#description' => t('A comma separated list of subdirectories to create symlinks for.  Example: modules,themes,libraries'),
+      '#default_value' => $form['#node']->symlink_subdirectories ? implode(',', $form['#node']->symlink_subdirectories) : '',
+      '#weight' => 2,
+    );
+    return $form;
+  }
+}
+ 
+/** 
+ * Implementation of hook_insert()
+ */
+function hosting_symlink_directories_insert($node) {print_r($node);
+  if ($node->symlink_directory_base && $node->symlink_subdirectories) {
+    db_query("INSERT INTO {hosting_symlink_directories} (vid, nid, symlink_directory_base, symlink_subdirectories) VALUES (%d, %d, '%s', '%s')", $node->vid, $node->nid, $node->symlink_directory_base, $node->symlink_subdirectories);
+  }
+}
+ 
+/**
+ * Implementation of hook_update()
+ */
+function hosting_symlink_directories_update($node) {
+  db_query("UPDATE {hosting_symlink_directories} SET symlink_directory_base='%s', symlink_subdirectories='%s' WHERE nid=%d", $node->symlink_directory_base, $node->symlink_subdirectories, $node->nid);
+}
+ 
+/**
+ * Implementation of hook_delete()
+ */
+function hosting_symlink_directories_delete($node) {
+  db_query("DELETE FROM {hosting_symlink_directories} WHERE nid=%d", $node->nid);
+}
+ 
+/**
+ * Implementation of hook_delete_revision()
+ */
+function hosting_symlink_directories_delete_revision($node) {
+  db_query("DELETE FROM {hosting_symlink_directories} WHERE vid=%d", $node->vid);
+}
+ 
+/** 
+ * Implementation of hook_nodeapi()
+ */
+function hosting_symlink_directories_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  if ($node->type == 'site' || $node->type == 'platform') {
+    switch ($op) {
+      case 'insert':
+      case 'update':
+        $symlink_directory_base = db_result(db_query("SELECT symlink_directory_base FROM {hosting_symlink_directories} WHERE vid=%d", $node->vid));
+        $old_node = empty($symlink_directory_base);
+        if ($old_node) {
+          hosting_symlink_directories_insert($node);
+        }
+        else {
+          hosting_symlink_directories_update($node);
+        }
+        break;
+      case 'delete':
+        hosting_symlink_directories_delete($node);
+        break;
+      case 'delete revision':
+        hosting_symlink_directories_delete_revision($node);
+        break;
+      case 'validate':
+        if (!$node->symlink_directory_base && $node->symlink_subdirectories) {
+          form_set_error('symlink_directory_base', t('You must enter a symlink directory base path in order to use the symlink subdirectories setting!'));
+        }
+        if ($node->symlink_directory_base && !$node->symlink_subdirectories) {
+          form_set_error('symlink_subdirectories', t('You must enter symlink subdirectories in order to use the symlink directory base path setting!'));
+        }
+        if (strpos($node->symlink_subdirectories, '/')) {
+          form_set_error('symlink_subdirectories', t('You may only enter a comma separated list into the symlink subdirectories field, please do not include any preceding or trailing slashes!'));
+        }
+        break;
+      case 'load':
+        $additions['symlink_directory_base'] = db_result(db_query("SELECT symlink_directory_base FROM {hosting_symlink_directories} WHERE vid=%d", $node->vid));
+        $additions['symlink_subdirectories'] = db_result(db_query("SELECT symlink_subdirectories FROM {hosting_symlink_directories} WHERE vid=%d", $node->vid));
+        $additions['symlink_subdirectories'] = explode(',', str_replace(' ', '', $additions['symlink_subdirectories']));
+        return $additions;
+        break;
+      case 'view':
+        $subdirectories = implode(', ', $node->symlink_subdirectories);
+        if ($node->symlink_directory_base) {
+          $node->content['info']['symlink_directory_settings'] = array(
+            '#type' => 'item',
+            '#title' => t('Symlink Directory <br />Settings'),
+            '#value' => '<b>Base Directory:</b><br />' . $node->symlink_directory_base . '<br /><b>Sub-directories:</b><br />' . $subdirectories,
+          );
+        }
+        break;
+    }
+  }
+}
